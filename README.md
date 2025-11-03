@@ -1,7 +1,8 @@
 ##### 可填配置：
 
-​	需要在config.txt写上配置。第一行写网址，第二行写名字，第三行密码，类似：
+​	需要在config.txt写上配置。第一行空着，第二行空着，第三行写名字，第四行密码，类似：
 
+<img width="614" height="297" alt="1762150215507" src="https://github.com/user-attachments/assets/b3d4fc2c-1e87-407f-9a48-e8412ce3cda2" />
 
 
 
