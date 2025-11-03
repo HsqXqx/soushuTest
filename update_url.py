@@ -5,7 +5,6 @@ from urllib.parse import urlparse
 import re
 import urllib3
 
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -23,32 +22,32 @@ def retrieve_contemporary_soushuba_address() -> str:
     try:
         with open('config.txt', 'r+', encoding='utf-8') as configuration_file_handle:
             configuration_file_lines = configuration_file_handle.readlines()
-            if configuration_file_lines:
-                raw_initial_line_content = configuration_file_lines[0].strip()
-                if raw_initial_line_content:
-                    operational_permanent_address = raw_initial_line_content
-                else:
-                    print(f"检测到config.txt第一行为空，写入默认地址：{preset_permanent_address}")
-                    configuration_file_lines[0] = f"{preset_permanent_address}\n"
-                    configuration_modified_flag = True
+            # 确保文件至少有4行，不足则补空行
+            while len(configuration_file_lines) < 4:
+                configuration_file_lines.append('')
+            
+            # 读取第三行作为永久地址（原第一行迁移至此）
+            raw_third_line_content = configuration_file_lines[2].strip()
+            if raw_third_line_content:
+                operational_permanent_address = raw_third_line_content
             else:
-                print(f"config.txt为空，写入默认地址：{preset_permanent_address}")
-                configuration_file_lines.append(f"{preset_permanent_address}\n")
+                print(f"检测到config.txt第三行为空，写入默认永久地址：{preset_permanent_address}")
+                configuration_file_lines[2] = f"{preset_permanent_address}\n"
                 configuration_modified_flag = True
 
-            while len(configuration_file_lines) < 2:
-                configuration_file_lines.append('')
-
+            # 如果有更新，写入文件
             if configuration_modified_flag:
                 configuration_file_handle.seek(0)
                 configuration_file_handle.writelines(configuration_file_lines)
                 configuration_file_handle.truncate()
 
     except FileNotFoundError:
-        print(f"未找到config.txt，创建文件并写入默认地址：{preset_permanent_address}")
+        print(f"未找到config.txt，创建文件并按新格式写入默认地址")
         with open('config.txt', 'w', encoding='utf-8') as configuration_file_handle:
-            configuration_file_handle.write(f"{preset_permanent_address}\n")
-            configuration_file_handle.write("\n")
+            configuration_file_handle.write("\n")  # 第一行：预留
+            configuration_file_handle.write("\n")  # 第二行：预留
+            configuration_file_handle.write(f"{preset_permanent_address}\n")  # 第三行：永久地址
+            configuration_file_handle.write("\n")  # 第四行：预留有效地址
     except Exception as exception_instance:
         print(f"处理config.txt时出错：{exception_instance}，将使用默认地址")
         operational_permanent_address = preset_permanent_address
@@ -140,13 +139,14 @@ def retrieve_contemporary_soushuba_address() -> str:
             try:
                 with open('config.txt', 'r+', encoding='utf-8') as configuration_file_handle:
                     configuration_file_lines = configuration_file_handle.readlines()
-                    while len(configuration_file_lines) < 2:
+                    # 确保文件至少有4行
+                    while len(configuration_file_lines) < 4:
                         configuration_file_lines.append('')
-                    configuration_file_lines[1] = f"{resolved_target_address}\n"
+                    configuration_file_lines[3] = f"{resolved_target_address}\n"  # 第四行写入有效地址
                     configuration_file_handle.seek(0)
                     configuration_file_handle.writelines(configuration_file_lines)
                     configuration_file_handle.truncate()
-                print(f"有效地址已写入config.txt第二行：{resolved_target_address}")
+                print(f"有效地址已写入config.txt第四行：{resolved_target_address}")
             except Exception as exception_instance:
                 print(f"写入有效地址失败：{exception_instance}")
             return resolved_target_address
